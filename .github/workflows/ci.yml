@@ -1,0 +1,34 @@
+name: Data Quality Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  data-quality-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Pytest
+        run: pytest -v --maxfail=1 --disable-warnings --junitxml=reports/pytest-report.xml
+
+      - name: Generate DQ Metrics
+        run: pytest -q --disable-warnings -k "data_quality_metrics"
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: dq-reports
+          path: |
+            reports/
+            **/dq_metrics.json
