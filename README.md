@@ -22,7 +22,7 @@ It includes:
 ## Run Tests Locally
 
 ```bash
-pytest -v --maxfail=1 --disable-warnings
+pytest -v --disable-warnings
 ```
 
 ---
