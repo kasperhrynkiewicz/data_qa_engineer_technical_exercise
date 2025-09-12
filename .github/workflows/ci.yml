@@ -28,8 +28,37 @@ jobs:
           mkdir -p reports
           pytest -v --maxfail=1 --disable-warnings --junitxml=reports/pytest-report.xml
 
-      - name: Generate DQ Metrics
+      - name: Generate Data Metrics
         run: pytest -q --disable-warnings -k "data_quality_metrics"
+
+      - name: Publish Data Metrics Summary
+        run: |
+          echo "## Data Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python - << 'EOF'
+          import json, pathlib, os
+    
+          metrics_file = pathlib.Path("reports/data_metrics.json")
+          if metrics_file.exists():
+            metrics = json.loads(metrics_file.read_text())
+            
+            def table_for_section(title, data):
+              lines = []
+              lines.append(f"### {title}")
+              lines.append("")
+              lines.append("| Metric | Value |")
+              lines.append("|--------|-------|")
+              for k, v in data.items():
+                lines.append(f"| {k} | {v} |")
+              lines.append("")
+              return "\n".join(lines)
+            
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              for section, data in metrics.items():
+                summary.write(table_for_section(section.capitalize(), data))
+          else:
+            print("No data_metrics.json found")
+          EOF
 
       - name: Upload Reports
         uses: actions/upload-artifact@v4
@@ -37,4 +66,4 @@ jobs:
           name: dq-reports
           path: |
             reports/
-            **/dq_metrics.json
+            **/data_metrics.json
