@@ -42,20 +42,17 @@ jobs:
           if metrics_file.exists():
             metrics = json.loads(metrics_file.read_text())
             
-            def table_for_section(title, data):
-              lines = []
-              lines.append(f"### {title}")
-              lines.append("")
-              lines.append("| Metric | Value |")
-              lines.append("|--------|-------|")
-              for k, v in data.items():
-                lines.append(f"| {k} | {v} |")
-              lines.append("")
-              return "\n".join(lines)
+            lines = []
+            lines.append("| Metric | Value |")
+            lines.append("|--------|-------|")
+            
+            for k, v in metrics.items():
+              lines.append(f"| {k} | {v} |")
+              
+            lines.append("")
             
             with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
-              for section, data in metrics.items():
-                summary.write(table_for_section(section.capitalize(), data))
+              summary.write("\n".join(lines))
           else:
             print("No data_metrics.json found")
           EOF
