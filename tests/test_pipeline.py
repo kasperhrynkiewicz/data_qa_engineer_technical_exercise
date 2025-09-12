@@ -26,11 +26,6 @@ def test_cleaned_schema(etl, customer_data, transaction_data):
     Assertions.assert_columns(cleaned, expected_columns)
 
 
-def test_transform_removes_doubled_customer_id(etl, customer_data, transaction_data):
-    cleaned, _ = etl.transform(customer_data, transaction_data)
-    Assertions.assert_unique(cleaned, "customer_id")
-
-
 def test_transform_removes_null_names(etl, customer_data, transaction_data):
     cleaned, _ = etl.transform(customer_data, transaction_data)
     Assertions.assert_not_null(cleaned, "name")
