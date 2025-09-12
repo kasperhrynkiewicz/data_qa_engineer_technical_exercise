@@ -26,7 +26,7 @@ jobs:
       - name: Run Pytest
         run: |
           mkdir -p reports
-          pytest -v --maxfail=1 --disable-warnings --junitxml=reports/pytest-report.xml
+          pytest -v --disable-warnings --junitxml=reports/pytest-report.xml
 
       - name: Generate Data Metrics
         run: pytest -q --disable-warnings -k "data_quality_metrics"
