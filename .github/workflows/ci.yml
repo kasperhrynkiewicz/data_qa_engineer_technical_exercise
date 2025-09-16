@@ -5,9 +5,9 @@ on:
   pull_request:
 
 jobs:
-  data-quality-tests:
+  tests:
+    name: Run Data Quality Tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -28,8 +28,30 @@ jobs:
           mkdir -p reports
           pytest -v --disable-warnings --junitxml=reports/pytest-report.xml
 
+  metrics:
+    name: Generate Data Metrics
+    runs-on: ubuntu-latest
+    needs: tests
+    if: always()  # Run even if the 'tests' job fails
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -r requirements.txt
+
       - name: Generate Data Metrics
-        run: pytest -q --disable-warnings -k "data_quality_metrics"
+        run: |
+          mkdir -p reports
+          pytest -q --disable-warnings -k "data_quality_metrics"
 
       - name: Publish Data Metrics Summary
         run: |
@@ -40,27 +62,27 @@ jobs:
     
           metrics_file = pathlib.Path("reports/data_metrics.json")
           if metrics_file.exists():
-            metrics = json.loads(metrics_file.read_text())
-            
-            lines = []
-            lines.append("| Metric | Value |")
-            lines.append("|--------|-------|")
-            
-            for k, v in metrics.items():
-              lines.append(f"| {k} | {v} |")
+              metrics = json.loads(metrics_file.read_text())
               
-            lines.append("")
-            
-            with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
-              summary.write("\n".join(lines))
+              lines = []
+              lines.append("| Metric | Value |")
+              lines.append("|--------|-------|")
+              
+              for k, v in metrics.items():
+                  lines.append(f"| {k} | {v} |")
+              
+              lines.append("")
+              
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+                  summary.write("\n".join(lines))
           else:
-            print("No data_metrics.json found")
+              print("No data_metrics.json found")
           EOF
 
       - name: Upload Reports
         uses: actions/upload-artifact@v4
         with:
-          name: dq-reports
+          name: data-reports
           path: |
             reports/
             **/data_metrics.json
