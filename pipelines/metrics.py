@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from helper.constants import EMAIL, ISO_CURRENCIES
+from helper.constants import EMAIL, ISO_CURRENCIES, ISO_COUNTRIES
 
 
 def get_metrics(customers: DataFrame, transactions: DataFrame, cleaned: DataFrame, invalid: DataFrame):
@@ -34,6 +34,9 @@ def get_metrics(customers: DataFrame, transactions: DataFrame, cleaned: DataFram
     # -----------------------------
     # Emails
     metrics["customers_valid_email_pct"] = customers["email"].str.match(EMAIL, na=False).mean()
+
+    # Countries
+    metrics["transactions_valid_countries_pct"] = customers["country"].isin(ISO_COUNTRIES).mean()
 
     # Currencies
     metrics["transactions_valid_currency_pct"] = transactions["currency"].isin(ISO_CURRENCIES).mean()

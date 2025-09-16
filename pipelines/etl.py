@@ -4,7 +4,7 @@ import pandas as pd
 
 from pathlib import Path
 from pandas import DataFrame
-from helper.constants import EMAIL, ISO_CURRENCIES
+from helper.constants import EMAIL, ISO_CURRENCIES, ISO_COUNTRIES
 
 
 class ETL:
@@ -31,9 +31,12 @@ class ETL:
         customers["valid"] = True
         customers.loc[customers["customer_id"].isnull(), "valid"] = False
         customers.loc[customers.duplicated("customer_id", keep=False), "valid"] = False
-        customers.loc[customers["name"].isnull(), "valid"] = False
+        customers.loc[customers["first_name"].isnull(), "valid"] = False
+        customers.loc[customers["last_name"].isnull(), "valid"] = False
         customers.loc[~customers["email"].str.match(EMAIL, na=False), "valid"] = False
         customers.loc[customers["signup_date"].isnull(), "valid"] = False
+        customers.loc[customers["country"].isnull() | ~customers["country"].str.upper().isin(
+            ISO_COUNTRIES), "valid"] = False
 
         valid_customers = customers[customers["valid"]].drop(columns=["valid"])
         invalid_customers = customers[~customers["valid"]].drop(columns=["valid"])

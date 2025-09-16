@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas import DataFrame
 
-from helper.constants import ISO_CURRENCIES
+from helper.constants import ISO_CURRENCIES, ISO_COUNTRIES
 
 
 class Assertions:
@@ -24,7 +24,7 @@ class Assertions:
         assert duplicates.empty, assertion_message
 
     @staticmethod
-    def assert_date(data: DataFrame, column: str, date_format: str = "%d-%m-%Y", message: str = None):
+    def assert_date(data: DataFrame, column: str, date_format: str = "%Y-%m-%d", message: str = None):
         invalid_dates = []
         for idx, val in data[column].items():
             try:
@@ -53,7 +53,12 @@ class Assertions:
         assert non_iso_currencies.empty, assertion_message
 
     @staticmethod
+    def assert_iso_country(data: DataFrame, column: str, message: str = None):
+        non_iso_countries = data[~data[column].isin(ISO_COUNTRIES)]
+        assertion_message = message if message is not None else f"Non ISO countries found for `{column}`:\n{non_iso_countries[[column]]}"
+        assert non_iso_countries.empty, assertion_message
+
+    @staticmethod
     def assert_columns(data: DataFrame, expected_columns: set, message: str = None):
         assertion_message = message if message is not None else f"Unexpected columns: {data.columns}"
         assert set(data.columns) == expected_columns, assertion_message
-

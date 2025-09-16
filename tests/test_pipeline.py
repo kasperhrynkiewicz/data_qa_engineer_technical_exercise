@@ -19,16 +19,23 @@ def test_cleaned_schema(etl, customer_data, transaction_data):
         "amount",
         "currency",
         "transaction_date",
-        "name",
+        "first_name",
+        "last_name",
         "email",
         "signup_date",
+        "country",
     }
     Assertions.assert_columns(cleaned, expected_columns)
 
 
-def test_transform_removes_null_names(etl, customer_data, transaction_data):
+def test_transform_removes_null_first_names(etl, customer_data, transaction_data):
     cleaned, _ = etl.transform(customer_data, transaction_data)
-    Assertions.assert_not_null(cleaned, "name")
+    Assertions.assert_not_null(cleaned, "first_name")
+
+
+def test_transform_removes_null_last_names(etl, customer_data, transaction_data):
+    cleaned, _ = etl.transform(customer_data, transaction_data)
+    Assertions.assert_not_null(cleaned, "last_name")
 
 
 def test_transform_removes_invalid_emails(etl, customer_data, transaction_data):
@@ -39,6 +46,11 @@ def test_transform_removes_invalid_emails(etl, customer_data, transaction_data):
 def test_transform_removes_invalid_signup_dates(etl, customer_data, transaction_data):
     cleaned, _ = etl.transform(customer_data, transaction_data)
     Assertions.assert_date(cleaned, "signup_date")
+
+
+def test_transform_removes_invalid_countries(etl, customer_data, transaction_data):
+    cleaned, _ = etl.transform(customer_data, transaction_data)
+    Assertions.assert_iso_country(cleaned, "country")
 
 
 def test_transform_removes_doubled_transaction_id(etl, customer_data, transaction_data):
